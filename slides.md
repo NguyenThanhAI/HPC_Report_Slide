@@ -86,6 +86,194 @@ h1 {
 
 # 1. Tổng quan Image Captioning
 
+- Kiến trúc tổng quát của một model Image Captioning:
+
+<img src="images/Image_Captioning_Architecture.png" width="600">
+
+- Gồm hai thành phần chính: Encoder và Decoder
+
+---
+
+# 2. Chi tiết phương pháp
+
+
+
+- Mô hình nhận input là một ảnh và tạo ra một mô tả là chuỗi mà một vị trí trong chuỗi được chọn từ $K$ từ (từ điểm gồm $K$ từ)
+
+$$y = \lbrace \bold{y}_1, \dots, \bold{y}_C \rbrace, \bold{y}_i \in \mathbb{R}^K$$
+
+với:
+- $K$ là số từ trong từ điển
+- $C$ là độ dài của câu mô tả
+
+## 2.1. Encoder
+
+- Encoder thường là một CNN
+
+- Encoder nhận đầu vào là một ảnh và tạo ra một tập các vector đặc trưng được gọi là vector gán nhãn
+
+
+---
+
+# 2. Chi tiết phương pháp
+
+
+## 2.1. Encoder
+
+- Giả sử encoder tạo ra tập gồm $L$ vector, mỗi vector có $D$ chiều
+
+$$a=\lbrace \bold{a}_1, \dots, \bold{a}_L \rbrace, \bold{a}_i \in \mathbb{R}^D$$
+
+<img src="images/Encoder.png" width="600">
+
+- $L=196$, $D=2048$
+
+---
+layout: two-cols
+---
+
+# 2. Chi tiết phương pháp
+
+
+## 2.2. Decoder
+
+- Kiến trúc Decoder:
+
+<img src="images/Decoder_Architecture_With_Attention.jpg" width="500">
+
+::right::
+
+- Các bước tạo mô tả:
+
+1. Từ $\bold{a}$, tạo ra trạng thái ẩn ban đầu cho Decoder $\bold{h}_0$ và $\bold{c}_0$
+
+2. Từ $\bold{a}$ và $\bold{h}_{t-1}$ tạo ra attention map $\alpha_t$
+
+3. Tính vector bối cảnh $\hat{\bold{z}}_t$ từ $\bold{a}$ và 
+$\alpha_t$
+
+4. Ghép embedding $\bold{Ey}_{t-1}$ với $\hat{\bold{z}}_t$ làm đầu vào cho Decoder
+
+5. Dự đoán đầu ra
+
+6. Quay lại 2. đến khi gặp đầu ra là từ "end"
+
+---
+layout: two-cols
+---
+
+# 2. Chi tiết phương pháp
+
+
+## 2.2. Decoder
+
+- Decoder sử dụng cấu trúc LSTM:
+
+<img src="images/LSTM_Sequence.jpg" width="600">
+
+::right::
+
+$$\begin{bmatrix}
+    \bold{i}_t \\
+    \bold{f}_t \\
+    \bold{o}_t \\
+    \bold{g}_t
+\end{bmatrix}=\begin{bmatrix}
+    \sigma \\
+    \sigma \\
+    \sigma \\
+    \mathrm{tanh}
+\end{bmatrix}W_{\mathrm{LSTM}}\begin{bmatrix}
+    \bold{h}_{t-1} \\
+    \bold{x}_t
+\end{bmatrix}$$
+
+$$\bold{c}_t = \bold{f}_t \odot\bold{c}_{t-1} + \bold{i}_t \odot \bold{g}_t$$
+
+$$\bold{h}_t = \bold{o}_t \odot \mathrm{tanh}(\bold{c}_t)$$
+
+- Với $\bold{i}_t, \bold{f}_t, \bold{c}_t, \bold{o}_t, \bold{h}_t$ lần lượt là cổng vào, cổng quên, cổng bộ nhớ trạng thái, cổng đầu ra và trạng thái ẩn của LSTM.
+
+- $\sigma$ và $\odot$ lần lượt là hàm sigmoid và phép nhân từng phần tử của hai ma trận
+
+---
+layout: two-cols
+---
+
+# 2. Chi tiết phương pháp
+
+
+## 2.2. Decoder
+
+- Cấu trúc LSTM trong phương pháp:
+
+<img src="images/LSTM_Concat.jpg" width="600">
+
+::right::
+
+$$\begin{bmatrix}
+    \bold{i}_t \\
+    \bold{f}_t \\
+    \bold{o}_t \\
+    \bold{g}_t
+\end{bmatrix}=\begin{bmatrix}
+    \sigma \\
+    \sigma \\
+    \sigma \\
+    \mathrm{tanh}
+\end{bmatrix}T_{D+m+n,n}\begin{bmatrix}
+    \bold{h}_{t-1} \\
+    \bold{Ey}_{t-1} \\
+    \hat{\bold{z}}_t
+\end{bmatrix}$$
+
+$$\bold{c}_t = \bold{f}_t \odot\bold{c}_{t-1} + \bold{i}_t \odot \bold{g}_t$$
+
+$$\bold{h}_t = \bold{o}_t \odot \mathrm{tanh}(\bold{c}_t)$$
+
+- Với $\hat{\bold{z}}_t \in \mathbb{R}^D$ là vector bối cảnh, lưu giữ thông tin về một khu vực cụ thể trong ảnh.
+
+- $\bold{E} \in \mathbb{R}^{m\times K}$ là ma trận embedding của từ điển
+
+- $m$ và $n$ là số chiều embedding và số chiều của LSTM
+
+---
+
+# 2. Chi tiết phương pháp
+
+
+## 2.2. Decoder
+
+- Khởi tạo $\bold{h}_0$ và $\bold{c}_0$
+
+$$\bold{h}_0 = f_{\mathrm{init, h}}\big(\dfrac{1}{L}\sum_i^L\bold{a}_i\big)$$
+
+$$\bold{c}_0 = f_{\mathrm{init, c}}\big(\dfrac{1}{L}\sum_i^L\bold{a}_i\big)$$
+
+---
+
+# 2. Chi tiết phương pháp
+
+
+## 2.3. Attention
+
+### 2.3.1 Hard Attention
+
+- Gọi $s_t$ là biến vị trí mà model tập trung vào tại từ thứ $t$. $s_{t,i}$ là một biến one-hot là 1 nếu vị trí thứ $i$ trong $L$ được model chọn để tạo ra từ thứ $t$
+
+$$p(s_{t, i}=1 \vert s_{j < t}, \bold{a})=\alpha_{t,i}$$
+
+$$\hat{\bold{z}}_t = \sum_i s_{t,i}\bold{a}_i$$
+
+- Ta định nghĩa hàm mục tiêu $L_s$ là một hàm cận dưới biến phân trên hàm log-likelihood cận biên $\log p (\bold{y} \vert \bold{a})$:
+
+$$L_s = \sum_s p(s\vert \bold{a}) \log p(\bold{y}\vert s, \bold{a})\\\leq \log \sum_s p(s \vert \bold{a}) p (\bold{y} \vert s, \bold{a})\\=\log p (\bold{y} \vert \bold{a})$$
+
+<style>
+  .katex{font-size: 1.1em;}
+</style>
+
+
 
 ---
 
@@ -107,7 +295,7 @@ h1 {
 
 # 3. Phương pháp đánh giá
 
-## 3.1 N-grams
+## 3.1. N-grams
 
 - N-grams là một khái niệm được sử dụng rất nhiều trong xử lý ngôn ngữ tự nhiên. Là một tập gồm n các từ liên tiếp nhau trong một câu
 
@@ -123,7 +311,7 @@ h1 {
 
 # 3. Phương pháp đánh giá
 
-## 3.2 Precision
+## 3.2. Precision
 
 - Độ đo đo lường số lượng từ xuất hiện trong câu được mô hình dịch cũng xuất hiện 
 
@@ -139,7 +327,7 @@ Precision = 3/5
 
 # 3. Phương pháp đánh giá
 
-## 3.3 Clipped Precision
+## 3.3. Clipped Precision
 
 - Cách tính Precision ở trên có thể bị gian lận bằng cách lặp một từ đúng nhiều lần để tăng Precision
 
@@ -157,7 +345,7 @@ Clipped Precision = 1/3
 
 # 3. Phương pháp đánh giá
 
-## 3.4 Độ chính xác trung bình hình học (GMP):
+## 3.4. Độ chính xác trung bình hình học (GMP):
 
 - Sử dụng các Precision ứng với các n-grams, ta tính độ chính xác trung bình hình học:
 
@@ -262,7 +450,7 @@ $$\mathrm{BLEU}(N)=\mathrm{BP}.\mathrm{GAP}(N)\approx 0.516973$$
 
 # 4. Thực nghiệm và kết quả
 
-# 4.1. Dữ liệu
+## 4.1. Dữ liệu
 
 - Tập dữ liệu được sử dụng cho quá trình huấn luyện là Flikr30k
 
@@ -278,7 +466,7 @@ layout: two-cols
 
 # 4. Thực nghiệm và kết quả
 
-# 4.1. Dữ liệu
+## 4.1. Dữ liệu
 
 - Một số hình ảnh mẫu và các câu miêu tả mẫu tương ứng:
 
@@ -295,7 +483,7 @@ layout: two-cols
 
 # 4. Thực nghiệm và kết quả
 
-# 4.1. Dữ liệu
+## 4.1. Dữ liệu
 
 - Tần số các từ chưa qua xử lý:
 
@@ -308,7 +496,7 @@ layout: two-cols
 
 # 4. Thực nghiệm và kết quả
 
-# 4.1. Dữ liệu
+## 4.1. Dữ liệu
 
 - Histogram độ dài của các miêu tả mẫu:
 
@@ -318,7 +506,28 @@ layout: two-cols
 
 - Độ dài của các miêu tả ảnh có phân phối lệch phải
 
-- Đa số các câu có độ dài từ 10 đến 20 từ
+- Đa số các câu có độ dài từ 5 đến 20 từ
 
 - Câu có độ dài lớn nhất khoảng 80
+
+
+---
+layout: two-cols
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.1. Dữ liệu
+
+- Tiền xử lý dữ liệu:
+
+  - Chuyển chữ viết hoa thành viết thường
+  - Xóa bỏ các dấu tách câu
+  - Bỏ đi các từ có chứa số
+
+::right::
+
+- Tần số các từ khi đã qua xử lý:
+
+<img src="images/Flickr_frequency_processed_word.jpg">
 
