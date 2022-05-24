@@ -1,6 +1,6 @@
-$$y = \lbrace \bold{y}_1, \dots, \bold{y}_C \rbrace, \bold{y}_i \in \mathbb{R}^K$$
+$$\bold{y} = \lbrace \bold{y}_1, \dots, \bold{y}_C \rbrace, \bold{y}_i \in \mathbb{R}^K$$
 
-$$a=\lbrace \bold{a}_1, \dots, \bold{a}_L \rbrace, \bold{a}_i \in \mathbb{R}^D$$
+$$\bold{a}=\lbrace \bold{a}_1, \dots, \bold{a}_L \rbrace, \bold{a}_i \in \mathbb{R}^D$$
 
 $$T_{s,t}: \mathbb{R}^s \rightarrow \mathbb{R}^t$$
 

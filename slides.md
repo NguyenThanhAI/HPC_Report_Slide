@@ -91,6 +91,7 @@ h1 {
 <img src="images/Image_Captioning_Architecture.png" width="600">
 
 - Gồm hai thành phần chính: Encoder và Decoder
+- Ở giữa encoder và decoder thường có thành phần attention để kết nối.
 
 ---
 
@@ -100,7 +101,7 @@ h1 {
 
 - Mô hình nhận input là một ảnh và tạo ra một mô tả là chuỗi mà một vị trí trong chuỗi được chọn từ $K$ từ (từ điểm gồm $K$ từ)
 
-$$y = \lbrace \bold{y}_1, \dots, \bold{y}_C \rbrace, \bold{y}_i \in \mathbb{R}^K$$
+$$\bold{y} = \lbrace \bold{y}_1, \dots, \bold{y}_C \rbrace, \bold{y}_i \in \mathbb{R}^K$$
 
 với:
 - $K$ là số từ trong từ điển
@@ -122,7 +123,7 @@ với:
 
 - Giả sử encoder tạo ra tập gồm $L$ vector, mỗi vector có $D$ chiều
 
-$$a=\lbrace \bold{a}_1, \dots, \bold{a}_L \rbrace, \bold{a}_i \in \mathbb{R}^D$$
+$$\bold{a}=\lbrace \bold{a}_1, \dots, \bold{a}_L \rbrace, \bold{a}_i \in \mathbb{R}^D$$
 
 <img src="images/Encoder.png" width="600">
 
@@ -250,6 +251,20 @@ $$\bold{h}_0 = f_{\mathrm{init, h}}\big(\dfrac{1}{L}\sum_i^L\bold{a}_i\big)$$
 
 $$\bold{c}_0 = f_{\mathrm{init, c}}\big(\dfrac{1}{L}\sum_i^L\bold{a}_i\big)$$
 
+- Đầu ra tính xác suất chọn một từ:
+
+$$p\big(\bold{y}_t\vert \bold{a}, \bold{y}_1^{t-1}\big) \propto \exp\big( \bold{L}_0(\bold{Ey}_{t-1} + \bold{L}_h\bold{h}_t + \bold{L}_z \hat{\bold{z}}_t) \big)$$
+
+$$\bold{L}_0 \in \mathbb{R}^{K\times m}$$
+
+$$\bold{L}_h \in \mathbb{R}^{m\times n}$$
+
+$$\bold{L}_z \in \mathbb{R}^{m\times D}$$
+
+<style>
+  .katex{font-size: 1.0em;}
+</style>
+
 ---
 
 # 2. Chi tiết phương pháp
@@ -257,7 +272,13 @@ $$\bold{c}_0 = f_{\mathrm{init, c}}\big(\dfrac{1}{L}\sum_i^L\bold{a}_i\big)$$
 
 ## 2.3. Attention
 
-### 2.3.1 Hard Attention
+- $\bold{a}_i$ và $\bold{h}_{t-1}$ được sử dụng để tạo ra attention map:
+
+$$e_{ti}=f_{\mathrm{att}}(\bold{a}_i, \bold{h}_{t-1})$$
+
+$$\alpha_{ti}=\dfrac{\exp(e_{ti})}{\displaystyle\sum_{k=1}^L \exp(e_{tk})}$$
+
+### 2.3.1. Hard Attention
 
 - Gọi $s_t$ là biến vị trí mà model tập trung vào tại từ thứ $t$. $s_{t,i}$ là một biến one-hot là 1 nếu vị trí thứ $i$ trong $L$ được model chọn để tạo ra từ thứ $t$
 
@@ -274,9 +295,91 @@ $$L_s = \sum_s p(s\vert \bold{a}) \log p(\bold{y}\vert s, \bold{a})\\\leq \log \
 </style>
 
 
+---
+
+# 2. Chi tiết phương pháp
+
+
+## 2.3. Attention
+
+### 2.3.1. Hard Attention
+
+- Với $W$ là trọng số của mô hình, đạo hàm riêng của $L_s$ theo $W$:
+
+$$\dfrac{\partial L_s}{\partial W}=\sum_s p(s \vert \bold{a}) \Big\lbrack \dfrac{\partial \log p(\bold{y} \vert s, \bold{a})}{\partial W} + \log p(\bold{y} \vert s, \bold{a}) \dfrac{\partial p(s \vert \bold{a})}{\partial W} \Big\rbrack)$$
+
+- $s_t$ tuân theo phân phối Multinoulli:
+
+$$\tilde{s}_t \sim \mathrm{Multinoulli}_L \big(\lbrace \alpha_i \big\rbrace)$$
+
+$$\dfrac{\partial L_s}{\partial W} \approx \dfrac{1}{N}\sum_{n=1}^N \Big\lbrack \dfrac{\partial \log p(\bold{y} \vert \tilde{s}^n, \bold{a})}{\partial W} + \log p(\bold{y} \vert \tilde{s}^n, \bold{a}) \dfrac{\partial p(\tilde{s}^n \vert \bold{a})}{\partial W} \Big\rbrack)$$
+
 
 ---
 
+# 2. Chi tiết phương pháp
+
+
+## 2.3. Attention
+
+### 2.3.1. Hard Attention
+
+- Quá trình lấy mẫu $s_t$ khiến gradient của $L_s$ theo $W$ có phương sai lớn, để giảm phương sai sử dụng phương pháp REINFORCE trong học tăng cường:
+
+$$\dfrac{\partial L_s}{\partial W}=\dfrac{1}{N}\sum_{n=1}^N \Big\lbrack \dfrac{\partial \log p(\bold{y} \vert \tilde{s}^n, \bold{a})}{\partial W} + \lambda_r (\log p(\bold{y} \vert \tilde{s}^n, \bold{a}) - b)\dfrac{\partial p(\tilde{s}^n \vert \bold{a})}{\partial W} + \lambda_e \dfrac{\partial H \lbrack \tilde{s}^n \rbrack}{\partial W} \Big \rbrack $$
+
+
+---
+
+# 2. Chi tiết phương pháp
+
+
+## 2.3. Attention
+
+### 2.3.2. Soft Attention
+
+- Với soft attention, kỳ vọng của $\hat{\bold{z}}_t$ có thể tính trực tiếp:
+
+$$\mathbb{E}_{p(s_t \vert a)}\lbrack \hat{\bold{z}}_t \rbrack=\sum_{i=1}^L \alpha_{t,i}\bold{a}_i$$
+
+- Công thức logit đầu ra của Decoder có dạng:
+
+$$\bold{n}_t = \bold{L}_0(\bold{Ey}_{t-1} + \bold{L}_h\bold{h}_t + \bold{L}_z \hat{\bold{z}}_t)$$
+
+$\bold{n}_{t,i}$ là $\bold{n}_t$ khi thay $\hat{\bold{z}}_t=\bold{a}_i$
+
+---
+
+# 2. Chi tiết phương pháp
+
+
+## 2.3. Attention
+
+### 2.3.2. Soft Attention
+
+- Ta định nghĩa hàm trung bình hình học có trọng số được chuẩn hóa:
+
+$$\mathrm{NWGM}\lbrack p(y_t=k\vert a) \rbrack=\dfrac{\displaystyle \prod_i \exp\big( n_{t, k, i} \big)^{p(s_{t,i}=1\vert a)}}{\displaystyle \sum_j \prod_i \exp\big( n_{t, j, i} \big)^{p(s_{t,i}=1\vert a)}}=\dfrac{\exp\big( \mathbb{E}_{p(s_t \vert a)} \lbrack n_{t,k} \rbrack  \big)}{\displaystyle \sum_j \exp \big(\mathbb{E}_{p(s_t \vert a)} \lbrack n_{t,j} \rbrack \big)}\approx \mathbb{E} \lbrack p(y_t=k \vert a)\rbrack$$
+
+---
+
+# 2. Chi tiết phương pháp
+
+
+## 2.3. Attention
+
+### 2.3.2. Soft Attention
+
+- Mô hình được học bằng cách cực tiểu hóa hàm mục tiêu:
+
+$$L_d=-\log\big( P(\bold{y} \vert \bold{x}) \big) + \lambda \sum_{i=1}^L (1-\sum_{t=1}^C \alpha_{ti})^2$$
+
+- Thực tế $\hat{\bold{z}}_t$ được nhân thêm một hệ số $\beta_t$:
+
+$$\hat{\bold{z}}_t=\beta_t \sum_{i=1}^L \alpha_{ti} \bold{a}_i=\sigma(f_{\beta_t(\bold{h}_{t-1})})\sum_{i=1}^L \alpha_{ti} \bold{a}_i$$
+
+
+---
 #  3. Phương pháp đánh giá
 
 - Phương pháp hay được sử dụng để đánh giá các bản dịch là BLEU Score.
@@ -531,3 +634,63 @@ layout: two-cols
 
 <img src="images/Flickr_frequency_processed_word.jpg">
 
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.1. Thực thi
+
+- Framework sử dụng: PyTorch
+
+- PyTorch là một machine learning framework mã nguồn mở dựa trên thư viện Torch, được sử dụng cho các ứng dụng thị giác máy tính và xử lý ngôn ngữ tự nhiên.
+
+- PyTorch có một hệ sinh thái rất lớn các công cụ và thư viện đi kèm:
+  - Flair
+  - ParlAI
+  - OpenMMLab
+  - FastAI
+  - VISSL
+  - AllenNLP
+  - ...
+
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.1. Thực thi
+
+### 4.1.1. Encoder
+
+- Encoder sử dụng pretrained ResNet-101 bỏ hai lớp cuối (lớp pooling và lớp phân loại)
+
+- Thêm một lớp ```AdaptiveAvgPool2d``` để cố định kích thước của feature map đầu ra là ```[14, 14, 2048]```
+
+<img src="images/ResNet-101-based-deep-feature-extractor.png" width="600">
+
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.1. Thực thi
+
+### 4.1.2. Attention
+
+- Chỉ bao gồm các lớp fully-connected
+
+- Biến đổi $\bold{a}_i$ về số chiều attention size
+
+- Biến đổi $\bold{h}_{t-1}$ về số chiều attention size
+
+- Cộng hai kết quả trên lại và biển đổi về số chiều bằng 1
+
+- Áp dụng hàm ```softmax``` để ra attention map $\alpha_{ti}$ 
+
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.1. Thực thi
+
+### 4.1.3. Decoder
+
+- Sắp xếp lại các câu mẫu và ảnh tương ứng theo thứ tự giảm dần độ dài câu mẫu. Hệ quả mỗi timestep có một batch size riêng
