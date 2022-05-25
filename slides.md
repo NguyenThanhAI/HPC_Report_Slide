@@ -278,6 +278,13 @@ $$e_{ti}=f_{\mathrm{att}}(\bold{a}_i, \bold{h}_{t-1})$$
 
 $$\alpha_{ti}=\dfrac{\exp(e_{ti})}{\displaystyle\sum_{k=1}^L \exp(e_{tk})}$$
 
+---
+
+# 2. Chi tiết phương pháp
+
+
+## 2.3. Attention
+
 ### 2.3.1. Hard Attention
 
 - Gọi $s_t$ là biến vị trí mà model tập trung vào tại từ thứ $t$. $s_{t,i}$ là một biến one-hot là 1 nếu vị trí thứ $i$ trong $L$ được model chọn để tạo ra từ thứ $t$
@@ -638,7 +645,7 @@ layout: two-cols
 
 # 4. Thực nghiệm và kết quả
 
-## 4.1. Thực thi
+## 4.1. Thực nghiệm
 
 - Framework sử dụng: PyTorch
 
@@ -657,7 +664,7 @@ layout: two-cols
 
 # 4. Thực nghiệm và kết quả
 
-## 4.1. Thực thi
+## 4.1. Thực nghiệm
 
 ### 4.1.1. Encoder
 
@@ -671,7 +678,7 @@ layout: two-cols
 
 # 4. Thực nghiệm và kết quả
 
-## 4.1. Thực thi
+## 4.1. Thực nghiệm
 
 ### 4.1.2. Attention
 
@@ -689,8 +696,82 @@ layout: two-cols
 
 # 4. Thực nghiệm và kết quả
 
-## 4.1. Thực thi
+## 4.1. Thực nghiệm
 
 ### 4.1.3. Decoder
 
 - Sắp xếp lại các câu mẫu và ảnh tương ứng theo thứ tự giảm dần độ dài câu mẫu. Hệ quả mỗi timestep có một batch size riêng
+
+<img src="images/Padded_Pack_Sequence.jpg" width="400">
+
+- Mỗi timestep, attention map và vector bối cảnh được tính
+
+- Ghép vector bối cảnh và embedding vector của từ kết quả ngay bước liền kề trước trở thành đầu vào của LSTM Cell
+
+
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.1. Thực nghiệm
+
+### 4.1.4. Tiền xử lý ảnh
+
+- Ảnh được resize về kích thước $256 \times 256$
+
+- Ảnh đầu vào được tiền xử lý qua công thức:
+
+$$\dfrac{\mathrm{image}/255-[0.485, 0.456, 0.406]}{[0.229, 0.224, 0.225]}$$
+
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.1. Thực nghiệm
+
+### 4.1.4. Training
+
+- Optimizer: Adam Optimizer
+- Batch size: 32
+- Encoder learning rate: 2e-5
+- Decoder learning rate: 4e-4
+- Attention dimension: 512
+- Decoder dimension: 512
+- Số từ trong từ điển: 10000
+- Metrics: BLEU-4
+- Reduce learning reate on pleteau: giảm 0.8 sau 8 epoch không có sự cải thiện BLEU-4
+- Môi trường huấn luyện: Kaggle Kernel
+- Loss: Cross Entropy và Attention Regularization
+
+---
+layout: two-cols
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.2. Kết quả
+
+- Loss function:
+
+<img src="images/Loss.png">
+
+
+::right::
+
+- Top-5 Accuracy:
+
+<img src="images/Top_5_Accuracy.png">
+
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.2. Kết quả
+
+- BLEU-4 Score:
+
+<img src="images/BLEU-4.png">
+
+
+- Khó khăn: Thiết bị training hạn chế, chưa đủ thời gian train đạt đến BLEU-4 đạt được trong paper gốc
+
