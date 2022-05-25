@@ -64,7 +64,7 @@ h1 {
 ## 3. Phương pháp đánh giá
 ## 4. Thực nghiệm và kết quả
 ## 5. Demo giao diện
-## 6. Hướng phát triển
+## 6. Hướng phát triển đề tài
 
 ---
 
@@ -86,6 +86,15 @@ h1 {
 
 # 1. Tổng quan Image Captioning
 
+- Kiến trúc tổng quát của một model dịch máy:
+
+
+<img src="images/Neural_Machine_Translation_Architecture.png" width="600">
+
+---
+
+# 1. Tổng quan Image Captioning
+
 - Kiến trúc tổng quát của một model Image Captioning:
 
 <img src="images/Image_Captioning_Architecture.png" width="600">
@@ -93,6 +102,8 @@ h1 {
 - Gồm hai thành phần chính: Encoder và Decoder
 - Kiến trúc chung kế thừa chủ yếu từ bài toán dịch máy
 - Ở giữa encoder và decoder thường có thành phần attention để kết nối.
+
+
 
 ---
 
@@ -885,14 +896,39 @@ layout: two-cols
 
 # 5. Demo giao diện
 
+- Thư viện sử dụng: PyQt5
+
+- PyQt là một bộ công cụ tiện ích GUI. Đây là Python interface cho Qt, một trong những thư viện GUI đa nền tảng mạnh mẽ và phổ biến nhất. PyQt được phát triển bởi RiverBank Computing Ltd.
+
+- PyQt API là một tập hợp các mô-đun chứa một số lượng lớn các lớp và hàm. Module QtCore chứa chức năng không phải GUI để làm việc với tệp và thư mục. Module QtGui chứa tất cả các lớp và hàm về giao diện. Ngoài ra, có các mô-đun để làm việc với XML (QtXml), SVG (QtSvg) và SQL (QtSql),...
+
+- Một số module thường xuyên được sử dụng:
+
+  - QtCore: các lớp không phải GUI được sử dụng bởi các module khác
+  - QtGui: Các thành phần giao diện người dùng
+  - QtMultimedia: Các lớp lập trình đa phương tiện cấp thấp
+  - QtNetwork: Các lớp lập trình mạng
+  - ...
+
+---
+
+# 5. Demo giao diện
+
 <img src="images/UI.jpg" width="600">
 
 ---
 
-# 6. Hướng phát triển
+# 6. Hướng phát triển đề tài
 
 - Sử dụng pretrained word embedding: GLOVE, CRAWL, GoogleNews, NumberBatch, Paragram-300,...
 
-- Sử dụng các cấu trúc Image Captioning hiện đại: VL-T5, Oscar, BART,...
+- Sử dụng các cấu trúc Image Captioning hiện đại: VL-T5, Oscar, VinVL, LXMERT, ...
+
+<img src="images/M2_Transformer.jpg" width="400">
 
 ---
+
+# Slide and code
+
+- https://github.com/NguyenThanhAI/HPC_Report_Slide
+- https://github.com/NguyenThanhAI/HPC_Image_Captioning
