@@ -91,6 +91,7 @@ h1 {
 <img src="images/Image_Captioning_Architecture.png" width="600">
 
 - Gồm hai thành phần chính: Encoder và Decoder
+- Kiến trúc chung kế thừa chủ yếu từ bài toán dịch máy
 - Ở giữa encoder và decoder thường có thành phần attention để kết nối.
 
 ---
@@ -384,6 +385,21 @@ $$L_d=-\log\big( P(\bold{y} \vert \bold{x}) \big) + \lambda \sum_{i=1}^L (1-\sum
 - Thực tế $\hat{\bold{z}}_t$ được nhân thêm một hệ số $\beta_t$:
 
 $$\hat{\bold{z}}_t=\beta_t \sum_{i=1}^L \alpha_{ti} \bold{a}_i=\sigma(f_{\beta_t(\bold{h}_{t-1})})\sum_{i=1}^L \alpha_{ti} \bold{a}_i$$
+
+
+---
+
+# 2. Chi tiết phương pháp
+
+
+## 2.3. Attention
+
+- So sánh hai phương pháp:
+
+||Hard Attention|Soft Attention|
+|----|----|----|
+|Ưu điểm|- Khi tính toán inference sẽ nhanh|Tính đạo hàm dễ dàng|
+|Nhược điểm|- Phương sai của gradient lớn, tính đạo hàm khó khăn|Tính toán lâu với ảnh có kích thước lớn|
 
 
 ---
@@ -729,7 +745,7 @@ $$\dfrac{\mathrm{image}/255-[0.485, 0.456, 0.406]}{[0.229, 0.224, 0.225]}$$
 
 ## 4.1. Thực nghiệm
 
-### 4.1.4. Training
+### 4.1.5. Training
 
 - Optimizer: Adam Optimizer
 - Batch size: 32
@@ -745,6 +761,76 @@ $$\dfrac{\mathrm{image}/255-[0.485, 0.456, 0.406]}{[0.229, 0.224, 0.225]}$$
 
 ---
 layout: two-cols
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.1. Thực nghiệm
+
+### 4.1.6. Kỹ thuật chọn từ
+
+### 4.1.6.1. Greedy search
+
+- Là kỹ thuật đơn giản nhất
+
+- Tại mỗi bước, chọn từ có xác suất đầu ra lớn nhất
+
+
+---
+
+
+# 4. Thực nghiệm và kết quả
+
+## 4.1. Thực nghiệm
+
+### 4.1.6. Kỹ thuật chọn từ
+
+### 4.1.6.2. Beam search
+
+- Không phải khi nào greedy cũng cho kết quả toàn cục là tốt nhất
+
+- Một kỹ thuật rất hay được sử dụng trong quá trình dịch máy là beam search
+
+- Beam search có một siêu tham số là $k$ là số từ khiến có tổ hợp tổng xác suất tích lũy lớn nhất trong quá trình dịch
+
+---
+layout: two-cols
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.1. Thực nghiệm
+
+### 4.1.6. Kỹ thuật chọn từ
+
+### 4.1.6.2. Beam search
+
+- Xét một bài toán dịch máy:
+
+<img src="images/Beam_search_1.png" width="400">
+
+::right::
+
+<img src="images/Beam_search_2.png" width="400">
+
+---
+layout: two-cols
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.1. Thực nghiệm
+
+### 4.1.6. Kỹ thuật chọn từ
+
+### 4.1.6.2. Beam search
+
+<img src="images/Beam_search_3.png" width="400">
+
+::right::
+
+<img src="images/Beam_search_4.png" width="400">
+
 ---
 
 # 4. Thực nghiệm và kết quả
@@ -775,3 +861,38 @@ layout: two-cols
 
 - Khó khăn: Thiết bị training hạn chế, chưa đủ thời gian train đạt đến BLEU-4 đạt được trong paper gốc
 
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.2. Kết quả
+
+- Ví dụ Attention map:
+
+<img src="images/Attention_Sample_1.png" width="750">
+
+---
+
+# 4. Thực nghiệm và kết quả
+
+## 4.2. Kết quả
+
+- Ví dụ Attention map:
+
+<img src="images/Attention_Sample_2.png" width="750">
+
+---
+
+# 5. Demo giao diện
+
+<img src="images/UI.jpg" width="600">
+
+---
+
+# 6. Hướng phát triển
+
+- Sử dụng pretrained word embedding: GLOVE, CRAWL, GoogleNews, NumberBatch, Paragram-300,...
+
+- Sử dụng các cấu trúc Image Captioning hiện đại: VL-T5, Oscar, BART,...
+
+---
