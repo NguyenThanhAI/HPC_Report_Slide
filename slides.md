@@ -73,6 +73,7 @@ h1 {
 - Định nghĩa: Image Captioning là một bài toán miêu tả nội dung của một ảnh dựa vào ngôn ngữ tự nhiên.
 
 - Ý nghĩa bài toán: 
+  - Gán nhãn dữ liệu tự động trên các mạng xã hội lớn
   - Để giúp những người già mắt kém hoặc người mù có thể biết được cảnh vật xung quanh hay hỗ trợ việc di chuyển
   - Giúp google search có thể tìm kiếm được hình ảnh dựa vào caption
 
@@ -409,8 +410,8 @@ $$\hat{\bold{z}}_t=\beta_t \sum_{i=1}^L \alpha_{ti} \bold{a}_i=\sigma(f_{\beta_t
 
 ||Hard Attention|Soft Attention|
 |----|----|----|
-|Ưu điểm|- Khi tính toán inference sẽ nhanh|Tính đạo hàm dễ dàng|
-|Nhược điểm|- Phương sai của gradient lớn, tính đạo hàm khó khăn|Tính toán lâu với ảnh có kích thước lớn|
+|Ưu điểm|Khi tính toán inference sẽ nhanh|Tính đạo hàm dễ dàng|
+|Nhược điểm|Phương sai của gradient lớn, tính đạo hàm khó khăn|Tính toán lâu với ảnh có kích thước lớn|
 
 
 ---
@@ -766,7 +767,7 @@ $$\dfrac{\mathrm{image}/255-[0.485, 0.456, 0.406]}{[0.229, 0.224, 0.225]}$$
 - Decoder dimension: 512
 - Số từ trong từ điển: 10000
 - Metrics: BLEU-4
-- Reduce learning reate on pleteau: giảm 0.8 sau 8 epoch không có sự cải thiện BLEU-4
+- Reduce learning rate on plateau: giảm 0.8 sau 8 epoch không có sự cải thiện BLEU-4
 - Môi trường huấn luyện: Kaggle Kernel
 - Loss: Cross Entropy và Attention Regularization
 
@@ -870,7 +871,7 @@ layout: two-cols
 <img src="images/BLEU-4.png">
 
 
-- Khó khăn: Thiết bị training hạn chế, chưa đủ thời gian train đạt đến BLEU-4 đạt được trong paper gốc
+- Khó khăn: Thiết bị training hạn chế, chưa đủ thời gian train đạt đến BLEU-4 (16.06 so với 19.9) đạt được trong paper gốc
 
 ---
 
@@ -930,5 +931,5 @@ layout: two-cols
 
 # Slide and code
 
-- https://github.com/NguyenThanhAI/HPC_Report_Slide
-- https://github.com/NguyenThanhAI/HPC_Image_Captioning
+- Slide: https://github.com/NguyenThanhAI/HPC_Report_Slide
+- Code: https://github.com/NguyenThanhAI/HPC_Image_Captioning
